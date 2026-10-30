@@ -25,7 +25,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between border-b border-purple-800/50">
             <div class="flex items-center space-x-3">
                 <span class="font-bold text-lg tracking-wide">臺雙殿人事系統</span>
-                <span class="text-xs bg-purple-800 text-purple-200 px-2 py-0.5 rounded-full">版本 1151028-1630・RBAC修復版</span>
+                <span class="text-xs bg-purple-800 text-purple-200 px-2 py-0.5 rounded-full">版本 1151028-1630・RBAC即時切換版</span>
                 <button onclick="clearAndReload()" class="text-xs bg-purple-700/60 hover:bg-purple-700 text-purple-100 px-2.5 py-1 rounded border border-purple-500/30 transition flex items-center space-x-1">
                     <i class="fa-solid fa-rotate-right"></i>
                     <span>重置資料並刷新</span>
@@ -82,19 +82,19 @@
         <!-- PAGE 1: CHECKIN (打卡總覽 & GPS 定位) -->
         <div id="tab-checkin" class="space-y-6">
 
-            <!-- 2. 壽星提醒 (只有 HR 角色呈現) -->
+            <!-- 壽星提醒 (只有 HR 角色呈現) -->
             <div id="companyBirthdayBanner" class="hidden birthday-gradient border border-pink-200 text-pink-900 rounded-xl p-4 shadow-sm flex items-center justify-between">
                 <div class="flex items-center space-x-3">
                     <div class="p-2.5 bg-white/60 rounded-lg text-2xl">🎉</div>
                     <div>
-                        <h4 class="text-sm font-bold">【HR 專屬提醒】今日全公司壽星名單！</h4>
-                        <p id="birthdayNamesText" class="text-xs text-pink-800">今天有同仁過生日，別忘了發送賀卡或安排慶生！</p>
+                        <h4 class="text-sm font-bold">【HR 專屬提醒】今日公司壽星名單！</h4>
+                        <p id="birthdayNamesText" class="text-xs text-pink-800">今天有同仁過生日，別忘了送上祝賀！</p>
                     </div>
                 </div>
-                <span class="bg-white/80 text-pink-700 font-bold text-xs px-3 py-1.5 rounded-full shadow-sm">🎂 HR Birthday Alert</span>
+                <span class="bg-white/80 text-pink-700 font-bold text-xs px-3 py-1.5 rounded-full shadow-sm">🎂 Today's Birthday</span>
             </div>
 
-            <!-- 3. 壽星祝福 (部門主管 & 一般員工 呈現) -->
+            <!-- 壽星祝福 (部門主管 & 一般員工 呈現) -->
             <div id="personalBirthdayBanner" class="hidden bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white rounded-xl p-5 shadow-lg">
                 <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div class="flex items-center space-x-4">
@@ -127,177 +127,3 @@
                     <div class="flex items-center space-x-2">
                         <span class="text-xs text-slate-500">切換測試人員：</span>
                         <select id="userSelector" class="bg-slate-100 border border-slate-200 text-xs font-semibold rounded px-2.5 py-1" onchange="switchUser()">
-                        </select>
-                    </div>
-                </div>
-
-                <div id="map"></div>
-
-                <div id="wfhSetupBox" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-3.5 flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <i class="fa-solid fa-house-signal text-amber-600 text-lg"></i>
-                        <div>
-                            <h4 class="text-xs font-bold text-amber-800">尚未設定居家打卡座標</h4>
-                            <p class="text-[11px] text-amber-600">一鍵綁定當前定位為您專屬的 WFH 打卡點。</p>
-                        </div>
-                    </div>
-                    <button onclick="setHomeLocationNow()" class="bg-amber-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-amber-700 shadow">一鍵綁定定位</button>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
-                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
-                        <p class="text-xs text-slate-400 font-medium">即時 GPS 狀態</p>
-                        <p id="geoStatusText" class="text-xs font-semibold text-slate-700 mt-1">定位獲取中...</p>
-                        <p id="geoCoordsText" class="text-[11px] text-slate-400 mt-0.5">緯度: -- / 經度: --</p>
-                    </div>
-                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200">
-                        <p class="text-xs text-slate-400 font-medium">距離目標中心點</p>
-                        <p id="geoDistanceText" class="text-base font-bold text-purple-600 mt-1">-- 公尺</p>
-                    </div>
-                    <!-- 4. 個人整月忘卡次數（一天算一次） -->
-                    <div class="bg-purple-50/70 p-3.5 rounded-xl border border-purple-100">
-                        <p class="text-xs text-purple-600 font-medium">本月累積忘卡次數</p>
-                        <p id="myMissingCardCount" class="text-base font-bold text-purple-800 mt-1">0 次</p>
-                        <p class="text-[10px] text-purple-400 mt-0.5">*整天缺卡算1次，滿5次自動通知HR*</p>
-                    </div>
-                </div>
-
-                <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 flex items-center justify-around text-center">
-                    <div>
-                        <p class="text-xs text-slate-500 font-medium flex items-center justify-center space-x-1">
-                            <i class="fa-solid fa-right-to-bracket text-emerald-600"></i>
-                            <span>今日上班打卡時間</span>
-                        </p>
-                        <p id="timeRecordIn" class="text-base font-bold text-slate-800 mt-1">未打卡</p>
-                    </div>
-                    <div class="h-8 w-[1px] bg-slate-200"></div>
-                    <div>
-                        <p class="text-xs text-slate-500 font-medium flex items-center justify-center space-x-1">
-                            <i class="fa-solid fa-right-from-bracket text-rose-600"></i>
-                            <span>今日下班打卡時間</span>
-                        </p>
-                        <p id="timeRecordOut" class="text-base font-bold text-slate-800 mt-1">未打卡</p>
-                    </div>
-                </div>
-
-                <div class="pt-2">
-                    <button id="smartCheckinBtn" onclick="performSmartCheckin()" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl shadow-lg hover:bg-emerald-700 transition flex items-center justify-center space-x-2 text-base">
-                        <i class="fa-solid fa-fingerprint text-lg"></i>
-                        <span id="smartCheckinText">一鍵打卡上班</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- PAGE 2: ATTENDANCE (出勤紀錄) - HR & Manager -->
-        <div id="tab-attendance" class="hidden space-y-6">
-            <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="font-bold text-slate-800">出勤打卡明細</h3>
-                    <button onclick="exportRecordsCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3.5 py-2 rounded-lg shadow flex items-center space-x-1.5">
-                        <i class="fa-solid fa-file-excel"></i><span>匯出打卡紀錄 (CSV)</span>
-                    </button>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs">
-                        <thead>
-                            <tr class="text-slate-400 border-b border-slate-200">
-                                <th class="pb-3">打卡時間</th>
-                                <th class="pb-3">姓名</th>
-                                <th class="pb-3">工號</th>
-                                <th class="pb-3">類型</th>
-                                <th class="pb-3">模式</th>
-                                <th class="pb-3">目標距離</th>
-                                <th class="pb-3">結果判定</th>
-                            </tr>
-                        </thead>
-                        <tbody id="allRecordsBody" class="divide-y divide-slate-100">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- PAGE 3: EMPLOYEES (員工管理) - HR Only -->
-        <div id="tab-employees" class="hidden space-y-6">
-            <div class="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                    <div>
-                        <h3 class="font-bold text-slate-800">員工名冊與考勤設定</h3>
-                        <p class="text-xs text-slate-400 mt-1">管理同仁資料、生日與工作模式 (WFH/公司)</p>
-                    </div>
-                    <div class="flex flex-wrap gap-2">
-                        <button onclick="downloadCSVTemplate()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-lg flex items-center space-x-1.5">
-                            <i class="fa-solid fa-download"></i><span>下載 CSV 範本</span>
-                        </button>
-                        <label class="bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-semibold px-3 py-2 rounded-lg cursor-pointer flex items-center space-x-1.5 border border-purple-200">
-                            <i class="fa-solid fa-file-import"></i><span>批次匯入 CSV</span>
-                            <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="importEmployeesCSV(event)">
-                        </label>
-                        <button onclick="openAddEmpModal()" class="bg-purple-700 hover:bg-purple-800 text-white text-xs font-semibold px-3.5 py-2 rounded-lg shadow flex items-center space-x-1.5">
-                            <i class="fa-solid fa-plus"></i><span>新增員工</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm">
-                        <thead>
-                            <tr class="text-slate-400 border-b border-slate-200 text-xs">
-                                <th class="pb-3">姓名</th>
-                                <th class="pb-3">工號</th>
-                                <th class="pb-3">部門</th>
-                                <th class="pb-3">職稱</th>
-                                <th class="pb-3">生日</th>
-                                <th class="pb-3">工作模式</th>
-                                <th class="pb-3">打卡點狀態</th>
-                                <th class="pb-3">操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="empTableBody" class="divide-y divide-slate-100 text-xs">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-    </main>
-
-    <script>
-        const COMPANY_TARGET = {
-            name: "台北總部大樓",
-            lat: 25.033976,
-            lng: 121.564537,
-            radius: 200,
-            wifi: "Company_Office_5G"
-        };
-
-        const defaultEmployees = [
-            { id: "EMP-001", name: "王小明", dept: "人力資源部", title: "HR經理", birthday: "1990-10-30", mode: "公司辦公", homeAddress: "", homeLat: null, homeLng: null, homeWifi: "" },
-            { id: "EMP-002", name: "陳美麗", dept: "資訊科技部", title: "全端工程師", birthday: "1995-05-15", mode: "居家辦公", homeAddress: "新北市板橋區", homeLat: 25.01235, homeLng: 121.4658, homeWifi: "Home_WiFi_5G" },
-            { id: "EMP-003", name: "張大華", dept: "行銷企劃部", title: "行銷總監", birthday: "1988-10-30", mode: "公司辦公", homeAddress: "", homeLat: null, homeLng: null, homeWifi: "" },
-            { id: "EMP-004", name: "李志強", dept: "業務部", title: "業務代表", birthday: "1992-12-01", mode: "居家辦公", homeAddress: "台北市內湖區", homeLat: null, homeLng: null, homeWifi: "" }
-        ];
-
-        let employees = [];
-        try {
-            const raw = localStorage.getItem('hr_employees');
-            employees = (raw && raw !== "undefined") ? JSON.parse(raw) : defaultEmployees;
-            if(!Array.isArray(employees) || employees.length === 0) employees = defaultEmployees;
-            employees.forEach(e => { if(!e.birthday) e.birthday = ""; });
-        } catch(e) { employees = defaultEmployees; }
-
-        let checkinRecords = [];
-        try {
-            const rawRec = localStorage.getItem('hr_records');
-            checkinRecords = (rawRec && rawRec !== "undefined") ? JSON.parse(rawRec) : [];
-            if(!Array.isArray(checkinRecords)) checkinRecords = [];
-        } catch(e) { checkinRecords = []; }
-
-        let currentUserIndex = 0;
-        let currentRole = "hr"; 
-        let map = null, userMarker = null, targetCircle = null;
-        let currentPos = null;
-
-        window.onload = function() {
-            saveEmployees
