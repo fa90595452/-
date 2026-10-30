@@ -26,9 +26,9 @@
             <div class="flex items-center space-x-3">
                 <span class="font-bold text-lg tracking-wide">臺雙殿人事系統</span>
                 <span class="text-xs bg-purple-800 text-purple-200 px-2 py-0.5 rounded-full">版本 1151028-1630・測試中</span>
-                <button onclick="location.reload()" class="text-xs bg-purple-700/60 hover:bg-purple-700 text-purple-100 px-2.5 py-1 rounded border border-purple-500/30 transition flex items-center space-x-1">
+                <button onclick="clearAndReload()" class="text-xs bg-purple-700/60 hover:bg-purple-700 text-purple-100 px-2.5 py-1 rounded border border-purple-500/30 transition flex items-center space-x-1">
                     <i class="fa-solid fa-rotate-right"></i>
-                    <span>重新整理</span>
+                    <span>重置資料並刷新</span>
                 </button>
             </div>
             
@@ -50,7 +50,7 @@
 
         <!-- Navigation Bar -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center space-x-1 overflow-x-auto text-sm py-1 font-medium">
-            <button onclick="switchTab('home')" id="nav-home" class="px-3 py-2 rounded-t-lg bg-white/10 text-white flex items-center space-x-1.5 whitespace-nowrap">
+            <button onclick="switchTab('home')" id="nav-home" class="px-3 py-2 rounded-t-lg bg-white/10 text-white flex items-center space-x-1.5 whitespace-nowrap font-bold border-b-2 border-white">
                 <i class="fa-solid fa-house text-xs"></i><span>首頁</span>
             </button>
             <button onclick="switchTab('checkin')" id="nav-checkin" class="px-3 py-2 rounded-t-lg hover:bg-white/10 text-purple-200 hover:text-white flex items-center space-x-1.5 whitespace-nowrap">
@@ -142,7 +142,7 @@
                 </div>
                 <div class="bg-red-50 p-3.5 rounded-xl border border-red-100 shadow-sm">
                     <p class="text-xs text-red-500 font-medium">忘卡缺卡</p>
-                    <h4 id="statMissingCard" class="text-xl font-bold text-red-600 mt-1">15</h4>
+                    <h4 id="statMissingCard" class="text-xl font-bold text-red-600 mt-1">17</h4>
                 </div>
                 <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
                     <p class="text-xs text-slate-400 font-medium">今日請假</p>
@@ -355,14 +355,16 @@
         let employees = [];
         try {
             const raw = localStorage.getItem('hr_employees');
-            employees = raw ? JSON.parse(raw) : defaultEmployees;
+            employees = (raw && raw !== "undefined") ? JSON.parse(raw) : defaultEmployees;
+            if(!Array.isArray(employees) || employees.length === 0) employees = defaultEmployees;
             employees.forEach(e => { if(!e.birthday) e.birthday = ""; });
         } catch(e) { employees = defaultEmployees; }
 
         let checkinRecords = [];
         try {
             const rawRec = localStorage.getItem('hr_records');
-            checkinRecords = rawRec ? JSON.parse(rawRec) : [];
+            checkinRecords = (rawRec && rawRec !== "undefined") ? JSON.parse(rawRec) : [];
+            if(!Array.isArray(checkinRecords)) checkinRecords = [];
         } catch(e) { checkinRecords = []; }
 
         let currentUserIndex = 0;
@@ -380,6 +382,12 @@
             checkBirthdayAlerts();
             updateDashboardStats();
         };
+
+        function clearAndReload() {
+            localStorage.removeItem('hr_employees');
+            localStorage.removeItem('hr_records');
+            location.reload();
+        }
 
         function startClock() {
             setInterval(() => {
@@ -400,7 +408,6 @@
                 else el.classList.add('hidden');
             });
             
-            // If on admin tab and switch to employee, bounce to home
             if(currentRole === 'employee' && ['reports', 'dashboard', 'settings'].includes(activeTabId)) {
                 switchTab('home');
             }
@@ -630,9 +637,12 @@
         }
 
         function updateDashboardStats() {
-            document.getElementById('statTotalEmp').innerText = employees.length;
-            document.getElementById('statTodayCount').innerText = checkinRecords.length;
-            document.getElementById('statMissingCard').innerText = Math.max(0, employees.length - checkinRecords.length);
+            const totEl = document.getElementById('statTotalEmp');
+            if(totEl) totEl.innerText = employees.length;
+            const todEl = document.getElementById('statTodayCount');
+            if(todEl) todEl.innerText = checkinRecords.length;
+            const misEl = document.getElementById('statMissingCard');
+            if(misEl) misEl.innerText = Math.max(0, employees.length - checkinRecords.length);
         }
 
         function renderEmployeesTable() {
