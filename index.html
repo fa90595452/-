@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 防快取 (No-Cache) 機制：確保手機每次打開都自動抓取最新版本 -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>智匯人事管理系統 - 員工極速打卡測試</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -33,7 +37,7 @@
 
                 <div class="flex items-center space-x-2">
                     <div class="text-right hidden sm:block mr-2">
-                        <div id="currentTime" class="text-xs font-semibold text-slate-700">16:37:00</div>
+                        <div id="currentTime" class="text-xs font-semibold text-slate-700">16:42:00</div>
                         <div id="currentDate" class="text-[10px] text-slate-400">2026/10/30 (五)</div>
                     </div>
                     <!-- 切換測試同仁選單 -->
