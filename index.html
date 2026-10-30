@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>智匯人事管理系統 2.0 - Enterprise HR System</title>
+    <title>智匯人事管理系統 2.2 - Enterprise HR System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -38,6 +38,61 @@
         </div>
     </div>
 
+    <!-- HR 編輯員工資料彈窗 (手動修改身份別與工作模式) -->
+    <div id="editEmpModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[9990] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                <h3 class="font-bold text-lg text-slate-800 flex items-center space-x-2">
+                    <i class="fa-solid fa-user-pen text-blue-600"></i>
+                    <span>編輯員工資料與權限</span>
+                </h3>
+                <button onclick="closeEditEmpModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <input type="hidden" id="editEmpId">
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="font-semibold text-slate-700">員工姓名</label>
+                    <input type="text" id="editEmpName" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-blue-500 font-medium">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="font-semibold text-slate-700">部門</label>
+                        <input type="text" id="editEmpDept" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-blue-500 font-medium">
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-700">職稱</label>
+                        <input type="text" id="editEmpTitle" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-blue-500 font-medium">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="font-semibold text-slate-700">身份別 (系統權限)</label>
+                        <select id="editEmpRole" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-blue-500 font-semibold text-blue-600">
+                            <option value="HR人資部">HR人資部</option>
+                            <option value="部門主管">部門主管</option>
+                            <option value="一般員工">一般員工</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="font-semibold text-slate-700">預設工作模式</label>
+                        <select id="editEmpMode" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-blue-500 font-semibold text-emerald-600">
+                            <option value="公司辦公">公司辦公 (雙據點)</option>
+                            <option value="居家辦公">居家辦公 (自動定位)</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="font-semibold text-slate-700">員工電子信箱 (OTP驗證用)</label>
+                    <input type="email" id="editEmpEmail" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-blue-500 font-medium" placeholder="example@company.com">
+                </div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeEditEmpModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl">取消</button>
+                <button onclick="saveEmpEdit()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl shadow">儲存修改</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Header -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -46,8 +101,8 @@
                     <i class="fa-solid fa-users-gear text-xl"></i>
                 </div>
                 <div>
-                    <h1 class="font-bold text-base sm:text-lg text-slate-800">智匯人事管理系統 <span class="text-xs font-normal bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full ml-1">v2.1</span></h1>
-                    <p class="text-[10px] sm:text-xs text-slate-400">Enterprise HR & Dual-Office Geolocation System</p>
+                    <h1 class="font-bold text-base sm:text-lg text-slate-800">智匯人事管理系統 <span class="text-xs font-normal bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full ml-1">v2.2</span></h1>
+                    <p class="text-[10px] sm:text-xs text-slate-400">Enterprise HR & Geolocation System</p>
                 </div>
             </div>
             <div class="flex items-center space-x-3">
@@ -55,11 +110,11 @@
                     <div id="currentTime" class="text-sm font-semibold text-slate-700">10:32:00</div>
                     <div id="currentDate" class="text-xs text-slate-400">2026/10/30 (五)</div>
                 </div>
-                <!-- 角色登入切換選單 -->
+                <!-- 角色登入切換選單 (按身份別 optgroup 分群) -->
                 <div class="flex items-center space-x-2 bg-slate-100 p-1.5 rounded-full px-3 border border-slate-200">
-                    <div class="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs" id="avatarText">蕭</div>
-                    <select id="userSelector" class="bg-transparent text-xs sm:text-sm font-medium focus:outline-none cursor-pointer pr-1" onchange="switchUser()">
-                        <!-- Dynamic Options -->
+                    <div class="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs" id="avatarText">權</div>
+                    <select id="userSelector" class="bg-transparent text-xs sm:text-sm font-semibold focus:outline-none cursor-pointer pr-1" onchange="switchUser()">
+                        <!-- Dynamic Grouped Options -->
                     </select>
                 </div>
             </div>
@@ -72,7 +127,7 @@
         <!-- Sidebar Navigation (Desktop) -->
         <aside class="lg:col-span-1 space-y-6 hidden lg:block">
             <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 space-y-2">
-                <div class="px-3 py-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">權限選單 (<span id="roleBadge">HR權限</span>)</div>
+                <div class="px-3 py-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider">權限選單 (<span id="roleBadge">HR人資部</span>)</div>
                 <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all bg-blue-50 text-blue-600">
                     <i class="fa-solid fa-chart-pie w-5"></i>
                     <span>儀表板總覽</span>
@@ -108,8 +163,8 @@
                     </div>
                 </div>
                 <div class="bg-slate-800/80 p-3 rounded-xl text-[11px] text-slate-300">
-                    <span class="text-amber-400 font-bold">💡 其他地點 / 居家：</span><br>
-                    若為居家辦公，將自動抓取您當天的首次打卡座標作為定位紀錄。
+                    <span class="text-amber-400 font-bold">💡 居家 / 其他地點：</span><br>
+                    若為居家辦公，將自動抓取您當天的首次打卡座標進行定位紀錄。
                 </div>
             </div>
         </aside>
@@ -195,13 +250,13 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="md:col-span-1 bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-2xl p-6 shadow-md flex flex-col justify-between">
                         <div>
-                            <span class="bg-white/20 text-white text-xs px-3 py-1 rounded-full font-medium">雙據點 & 自動定位</span>
-                            <h3 class="text-2xl font-bold mt-4">智慧考勤打卡</h3>
-                            <p class="text-blue-100 text-xs mt-2 leading-relaxed">支援台北 SoR 總部與永和倉庫雙據點定位驗證，其他地點自動抓取首次打卡座標。</p>
+                            <span class="bg-white/20 text-white text-xs px-3 py-1 rounded-full font-medium">極速打卡通道</span>
+                            <h3 class="text-2xl font-bold mt-4">一鍵智慧考勤</h3>
+                            <p class="text-blue-100 text-xs mt-2 leading-relaxed">點擊前往打卡頁，背景自動抓取 GPS 座標完成考勤，1 秒極速搞定。</p>
                         </div>
                         <button onclick="switchTab('checkin')" class="mt-6 w-full bg-white text-blue-600 font-bold py-3 rounded-xl shadow hover:bg-blue-50 transition-all flex items-center justify-center space-x-2">
                             <i class="fa-solid fa-paper-plane"></i>
-                            <span>進入定位打卡頁面</span>
+                            <span>前往打卡頁面</span>
                         </button>
                     </div>
 
@@ -218,7 +273,7 @@
                                         <th class="pb-2">類型</th>
                                         <th class="pb-2">打卡時間</th>
                                         <th class="pb-2">歸屬日期</th>
-                                        <th class="pb-2">模式/地點</th>
+                                        <th class="pb-2">據點標籤</th>
                                     </tr>
                                 </thead>
                                 <tbody id="recentRecordsBody" class="divide-y divide-slate-50 text-slate-600">
@@ -263,8 +318,8 @@
                             <span>打卡點驗證規則：</span>
                         </div>
                         <p class="text-[11px] leading-relaxed text-blue-700">
-                            • <b>公司辦公</b>：進入「台北 SoR 總部」或「永和倉庫」200m 範圍內皆可打卡。<br>
-                            • <b>居家/其他地點</b>：系統將自動根據您當天「第一次打卡」的 GPS 進行自動定位。
+                            • <b>公司辦公</b>：進入「台北 SoR 總部」或「永和倉庫」200m 範圍內即可完成打卡。<br>
+                            • <b>居家/其他地點</b>：自動以您當天首次打卡的 GPS 座標作為定位依據。
                         </p>
                     </div>
 
@@ -299,15 +354,17 @@
                 <div class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-100 shadow-sm">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                         <div>
-                            <h3 class="font-bold text-slate-800 text-base">員工資料與忘卡警示管理</h3>
-                            <p class="text-xs text-slate-400 mt-1">檢視全體同仁部門、工作模式及本月累積忘卡統計</p>
+                            <h3 class="font-bold text-slate-800 text-base">員工資料與權限管理</h3>
+                            <p class="text-xs text-slate-400 mt-1">匯入名單自動同名/同工號覆蓋，點擊「編輯」可變更身份別與工作模式</p>
                         </div>
                         <div class="flex flex-wrap gap-2">
+                            <label class="bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-semibold px-3.5 py-2 rounded-xl cursor-pointer transition-all flex items-center space-x-1.5 shadow-sm">
+                                <i class="fa-solid fa-file-import"></i>
+                                <span>批次匯入 CSV 名單</span>
+                                <input type="file" id="csvFileInput" accept=".csv" class="hidden" onchange="importEmployeesCSV(event)">
+                            </label>
                             <button onclick="downloadCSVTemplate()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-xl transition-all">
                                 <i class="fa-solid fa-download mr-1"></i>下載範本
-                            </button>
-                            <button onclick="openAddEmpModal()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2 rounded-xl shadow transition-all">
-                                <i class="fa-solid fa-plus mr-1"></i>新增員工
                             </button>
                         </div>
                     </div>
@@ -320,9 +377,10 @@
                                     <th class="pb-3">姓名</th>
                                     <th class="pb-3">工號</th>
                                     <th class="pb-3">部門 / 職稱</th>
-                                    <th class="pb-3">預設工作模式</th>
-                                    <th class="pb-3">本月忘卡次數</th>
-                                    <th class="pb-3">生日</th>
+                                    <th class="pb-3">身份別 (權限)</th>
+                                    <th class="pb-3">工作模式</th>
+                                    <th class="pb-3">本月忘卡</th>
+                                    <th class="pb-3">操作</th>
                                 </tr>
                             </thead>
                             <tbody id="empTableBody" class="divide-y divide-slate-100">
@@ -405,35 +463,13 @@
     <script>
         // 公司官方雙據點 (半徑 200 公尺)
         const COMPANY_TARGETS = [
-            {
-                id: "SOR_HQ",
-                name: "台北 SoR 總部",
-                address: "台北市中正區羅斯福路四段68號15樓之2",
-                lat: 25.01353,
-                lng: 121.53685,
-                radius: 200
-            },
-            {
-                id: "YONGHE_WH",
-                name: "永和倉庫",
-                address: "新北市永和區民權路53號6樓",
-                lat: 25.00030,
-                lng: 121.52180,
-                radius: 200
-            }
+            { id: "SOR_HQ", name: "台北 SoR 總部", address: "台北市中正區羅斯福路四段68號15樓之2", lat: 25.01353, lng: 121.53685, radius: 200 },
+            { id: "YONGHE_WH", name: "永和倉庫", address: "新北市永和區民權路53號6樓", lat: 25.00030, lng: 121.52180, radius: 200 }
         ];
 
-        // 預設員工資料庫 (包含 WFH 預設人員)
-        let employees = JSON.parse(localStorage.getItem('hr_employees_v2.1')) || [
-            { id: "EMP-001", name: "蕭千雯", dept: "人力資源部", title: "HR經理", role: "HR", birthday: "1990-10-30", mode: "公司辦公" },
-            { id: "EMP-002", name: "王月英", dept: "行政管理部", title: "行政主管", role: "部門主管", birthday: "1988-06-12", mode: "居家辦公" },
-            { id: "EMP-003", name: "李綠芬", dept: "資訊科技部", title: "資深工程師", role: "一般員工", birthday: "1995-03-20", mode: "居家辦公" },
-            { id: "EMP-004", name: "莊恩綺", dept: "行銷企劃部", title: "行銷專員", role: "一般員工", birthday: "1998-10-30", mode: "居家辦公" },
-            { id: "EMP-005", name: "黃醒文", dept: "業務部", title: "業務副理", role: "部門主管", birthday: "1991-11-15", mode: "居家辦公" },
-            { id: "EMP-006", name: "彭益國", dept: "專案部", title: "巡檢工程師", role: "一般員工", birthday: "1993-08-08", mode: "居家辦公" } // 彭益國採動態自動判定
-        ];
-
-        let checkinRecords = JSON.parse(localStorage.getItem('hr_records_v2.1')) || [];
+        // 初始員工資料庫設為空陣列 (完全由使用者 CSV 匯入驅動)
+        let employees = JSON.parse(localStorage.getItem('hr_employees_v2.2')) || [];
+        let checkinRecords = JSON.parse(localStorage.getItem('hr_records_v2.2')) || [];
         let currentUserIndex = 0;
         let map, userMarker;
         let companyCircles = [];
@@ -456,11 +492,11 @@
         }
 
         function saveEmployees() {
-            localStorage.setItem('hr_employees_v2.1', JSON.stringify(employees));
+            localStorage.setItem('hr_employees_v2.2', JSON.stringify(employees));
         }
 
         function saveRecords() {
-            localStorage.setItem('hr_records_v2.1', JSON.stringify(checkinRecords));
+            localStorage.setItem('hr_records_v2.2', JSON.stringify(checkinRecords));
         }
 
         function openDlg(title, msg, isConfirm = false, callback = null) {
@@ -477,20 +513,43 @@
             dlgCallback = null;
         }
 
+        // 分群選單渲染 (<optgroup>)
         function renderUserSelector() {
             const selector = document.getElementById('userSelector');
             selector.innerHTML = '';
-            employees.forEach((emp, index) => {
+
+            if (employees.length === 0) {
                 const opt = document.createElement('option');
-                opt.value = index;
-                opt.innerText = `${emp.name} (${emp.role})`;
+                opt.value = "";
+                opt.innerText = "請先匯入 CSV 員工名單";
                 selector.appendChild(opt);
+                return;
+            }
+
+            const roles = ["HR人資部", "部門主管", "一般員工"];
+            roles.forEach(rGroup => {
+                const groupEmps = employees.filter(e => (e.role || "一般員工") === rGroup);
+                if (groupEmps.length > 0) {
+                    const optGroup = document.createElement('optgroup');
+                    optGroup.label = `── ${rGroup} ──`;
+                    groupEmps.forEach(emp => {
+                        const globalIdx = employees.findIndex(e => e.id === emp.id);
+                        const opt = document.createElement('option');
+                        opt.value = globalIdx;
+                        opt.innerText = `${emp.name} (${emp.dept || '未定'})`;
+                        optGroup.appendChild(opt);
+                    });
+                    selector.appendChild(optGroup);
+                }
             });
+
+            if (currentUserIndex >= employees.length) currentUserIndex = 0;
             selector.value = currentUserIndex;
             updateUserDisplay();
         }
 
         function switchUser() {
+            if (employees.length === 0) return;
             currentUserIndex = parseInt(document.getElementById('userSelector').value);
             updateUserDisplay();
             applyUserRolePermissions();
@@ -498,9 +557,10 @@
         }
 
         function updateUserDisplay() {
+            if (employees.length === 0) return;
             const user = employees[currentUserIndex];
             document.getElementById('avatarText').innerText = user.name.substring(0, 1);
-            document.getElementById('roleBadge').innerText = user.role;
+            document.getElementById('roleBadge').innerText = user.role || "一般員工";
             updateTargetWidget();
             checkBirthdayAlerts();
             renderDashboard();
@@ -508,8 +568,9 @@
         }
 
         function applyUserRolePermissions() {
+            if (employees.length === 0) return;
             const user = employees[currentUserIndex];
-            const role = user.role;
+            const role = user.role || "一般員工";
 
             const navEmployees = document.getElementById('nav-employees');
             const navRecords = document.getElementById('nav-records');
@@ -553,17 +614,18 @@
         }
 
         function checkBirthdayAlerts() {
+            if (employees.length === 0) return;
             const nowMMDD = new Date().toISOString().slice(5, 10);
             const user = employees[currentUserIndex];
 
             const hrBanner = document.getElementById('companyBirthdayBanner');
             const personalBanner = document.getElementById('personalBirthdayBanner');
 
-            if (user.role === 'HR') {
+            if (user.role === 'HR人資部') {
                 const todayEmps = employees.filter(e => e.birthday && e.birthday.endsWith(nowMMDD));
                 if (todayEmps.length > 0) {
                     const names = todayEmps.map(e => `${e.name} (${e.dept})`).join('、');
-                    document.getElementById('birthdayNamesText').innerText = `今天的壽星同仁有：${names}，別忘了給予關心與祝賀！🎉`;
+                    document.getElementById('birthdayNamesText').innerText = `今天的壽星同仁有：${names}，別忘了給予關懷與祝賀！🎉`;
                     hrBanner.classList.remove('hidden');
                 } else {
                     hrBanner.classList.add('hidden');
@@ -572,7 +634,7 @@
                 hrBanner.classList.add('hidden');
             }
 
-            if (user.role !== 'HR' && user.birthday && user.birthday.endsWith(nowMMDD)) {
+            if (user.role !== 'HR人資部' && user.birthday && user.birthday.endsWith(nowMMDD)) {
                 document.getElementById('birthdayUserName').innerText = user.name;
                 personalBanner.classList.remove('hidden');
                 triggerConfetti();
@@ -590,12 +652,13 @@
         function getAttDateString(dateObj) {
             const d = new Date(dateObj);
             if (d.getHours() < 5) {
-                d.setDate(d.getDate() - 1); // 05:00 前算前一日
+                d.setDate(d.getDate() - 1);
             }
             return d.toISOString().split('T')[0];
         }
 
         function updateSmartPunchButton() {
+            if (employees.length === 0) return;
             const user = employees[currentUserIndex];
             const todayStr = getAttDateString(new Date());
 
@@ -628,8 +691,12 @@
             }
         }
 
-        // 單一智慧打卡邏輯 (雙據點 + 居家自動抓取首次打卡座標)
+        // 極速打卡邏輯
         function performSmartCheckin() {
+            if (employees.length === 0) {
+                openDlg("無法打卡", "請先匯入 CSV 員工名單。");
+                return;
+            }
             const user = employees[currentUserIndex];
             const now = new Date();
             const attDate = getAttDateString(now);
@@ -640,46 +707,34 @@
                 return;
             }
 
-            // 計算與台北 SoR 總部、永和倉庫的距離
             const distSoR = Math.round(calculateHaversineDistance(currentPos.lat, currentPos.lng, COMPANY_TARGETS[0].lat, COMPANY_TARGETS[0].lng));
             const distWH = Math.round(calculateHaversineDistance(currentPos.lat, currentPos.lng, COMPANY_TARGETS[1].lat, COMPANY_TARGETS[1].lng));
             const minCompanyDist = Math.min(distSoR, distWH);
             const nearestOffice = distSoR <= distWH ? COMPANY_TARGETS[0] : COMPANY_TARGETS[1];
 
-            // 判讀打卡類型 (上班/下班)
             const todayLogs = checkinRecords.filter(r => r.empId === user.id && r.attDate === attDate);
             const hasIn = todayLogs.find(r => r.type === '上班');
             const type = !hasIn ? '上班' : '下班';
 
-            let actualMode = user.mode;
+            let actualMode = user.mode || "公司辦公";
             let locationLabel = "";
 
-            // 1. 彭益國特殊動態判定：在任一公司據點 200m 內算公司，否則算居家
             if (user.name === '彭益國') {
                 if (minCompanyDist <= 200) {
                     actualMode = "公司辦公";
                     locationLabel = nearestOffice.name;
                 } else {
-                    actualMode = "居家/其他地點";
+                    actualMode = "居家辦公";
                     locationLabel = "自動偵測打卡點";
                 }
             } else if (actualMode === '公司辦公') {
-                // 2. 一般公司辦公人員：必須在任一據點 200m 內
                 if (minCompanyDist > 200) {
                     openDlg("超出打卡範圍", `您目前距離台北總部 ${distSoR}m、距離永和倉庫 ${distWH}m。\n未在公司任一據點 200 公尺半徑範圍內，無法完成公司打卡。`);
                     return;
                 }
                 locationLabel = nearestOffice.name;
             } else {
-                // 3. 居家辦公/其他地點：自動以當天首次打卡位置為準
-                locationLabel = hasIn ? "居家/其他地點 (沿用今日定位)" : "居家/其他地點 (自動偵測首次定位)";
-            }
-
-            // 去重防錯
-            const isDuplicate = checkinRecords.some(r => r.empId === user.id && r.timestamp === now.toLocaleString() && r.type === type);
-            if (isDuplicate) {
-                openDlg("防重複提醒", "系統已存在相同的打卡紀錄。");
-                return;
+                locationLabel = hasIn ? "居家辦公 (沿用今日定位)" : "居家辦公 (自動偵測首次定位)";
             }
 
             const newRecord = {
@@ -692,7 +747,6 @@
                 attDate: attDate,
                 timeOnly: timeOnlyStr,
                 timestamp: now.toLocaleString('zh-TW', { hour12: false }),
-                coordsText: `${currentPos.lat.toFixed(5)}, ${currentPos.lng.toFixed(5)}`,
                 distText: actualMode === '公司辦公' ? `距${locationLabel} ${minCompanyDist}m` : `GPS: ${currentPos.lat.toFixed(4)}, ${currentPos.lng.toFixed(4)}`
             };
 
@@ -724,6 +778,7 @@
         }
 
         function renderDashboard() {
+            if (employees.length === 0) return;
             const user = employees[currentUserIndex];
             const todayStr = getAttDateString(new Date());
 
@@ -745,7 +800,7 @@
             const hrCard = document.getElementById('hrForgotAlertCard');
             const hrList = document.getElementById('hrForgotList');
 
-            if (user.role === 'HR') {
+            if (user.role === 'HR人資部') {
                 hrList.innerHTML = '';
                 let alertCount = 0;
 
@@ -755,7 +810,7 @@
                         alertCount++;
                         const tag = document.createElement('span');
                         tag.className = "bg-rose-600 text-white text-xs font-bold px-3 py-1 rounded-lg shadow-sm flex items-center space-x-1";
-                        tag.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> <span>${emp.name} (${emp.dept})：忘卡 ${count} 次</span>`;
+                        tag.innerHTML = `<i class="fa-solid fa-circle-exclamation"></i> <span>${emp.name} (${emp.dept || '部門'}): 忘卡 ${count} 次</span>`;
                         hrList.appendChild(tag);
                     }
                 });
@@ -793,13 +848,57 @@
             });
         }
 
+        // CSV 匯入 (具備同名/同工號自動覆蓋功能)
+        function importEmployeesCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split('\n');
+                let countNew = 0, countUpdate = 0;
+
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    const cols = line.split(',');
+                    if (cols.length >= 2) {
+                        const id = cols[0].trim();
+                        const name = cols[1].trim();
+                        const dept = cols[2] ? cols[2].trim() : "未定";
+                        const title = cols[3] ? cols[3].trim() : "專員";
+                        const role = cols[4] ? cols[4].trim() : "一般員工";
+                        const birthday = cols[5] ? cols[5].trim() : "";
+                        const mode = cols[6] ? cols[6].trim() : "公司辦公";
+                        const email = cols[7] ? cols[7].trim() : "";
+
+                        // 比對主鍵：以工號或姓名進行覆蓋檢查
+                        const existingIndex = employees.findIndex(e => e.id === id || e.name === name);
+                        if (existingIndex >= 0) {
+                            employees[existingIndex] = { id, name, dept, title, role, birthday, mode, email };
+                            countUpdate++;
+                        } else {
+                            employees.push({ id, name, dept, title, role, birthday, mode, email });
+                            countNew++;
+                        }
+                    }
+                }
+                saveEmployees();
+                renderUserSelector();
+                renderDashboard();
+                openDlg("匯入完成", `成功匯入名單！\n• 新增員工：${countNew} 人\n• 覆蓋更新：${countUpdate} 人`);
+            };
+            reader.readAsText(file);
+        }
+
         function renderEmployeesTable() {
             const tbody = document.getElementById('empTableBody');
             const mobileCards = document.getElementById('empMobileCards');
             tbody.innerHTML = '';
             mobileCards.innerHTML = '';
 
-            employees.forEach(emp => {
+            employees.forEach((emp, idx) => {
                 const forgotCount = calculateMonthlyForgotCards(emp.id);
                 const isHighForgot = forgotCount >= 5;
 
@@ -809,9 +908,14 @@
                     <td class="py-3 font-bold text-slate-800">${emp.name}</td>
                     <td class="py-3 text-slate-500">${emp.id}</td>
                     <td class="py-3 text-slate-600">${emp.dept} / ${emp.title}</td>
-                    <td class="py-3"><span class="bg-slate-100 text-slate-700 text-[10px] px-2 py-1 rounded-md font-medium">${emp.mode}</span></td>
-                    <td class="py-3 font-bold ${isHighForgot?'text-rose-600':'text-slate-700'}">${forgotCount} 次 ${isHighForgot?'⚠️(警示)':''}</td>
-                    <td class="py-3 text-slate-400">${emp.birthday || '--'}</td>
+                    <td class="py-3"><span class="bg-blue-50 text-blue-700 text-[10px] px-2.5 py-1 rounded-full font-bold">${emp.role || '一般員工'}</span></td>
+                    <td class="py-3"><span class="${emp.mode==='公司辦公'?'bg-blue-100 text-blue-800':'bg-emerald-100 text-emerald-800'} text-[10px] px-2 py-0.5 rounded-md font-semibold">${emp.mode==='公司辦公'?'🏢 總部辦公':'🏠 居家 WFH'}</span></td>
+                    <td class="py-3 font-bold ${isHighForgot?'text-rose-600':'text-slate-700'}">${forgotCount} 次 ${isHighForgot?'⚠️':''}</td>
+                    <td class="py-3">
+                        <button onclick="openEditEmpModal(${idx})" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] px-2.5 py-1 rounded-lg font-medium transition-all">
+                            <i class="fa-solid fa-pen-to-square mr-1"></i>編輯
+                        </button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
 
@@ -820,16 +924,52 @@
                 card.innerHTML = `
                     <div class="flex justify-between items-center">
                         <span class="font-bold text-slate-800 text-sm">${emp.name} (${emp.id})</span>
-                        <span class="text-xs px-2 py-0.5 rounded-full ${isHighForgot?'bg-rose-600 text-white font-bold':'bg-slate-200 text-slate-700'}">忘卡: ${forgotCount}次</span>
+                        <span class="text-xs px-2.5 py-0.5 rounded-full ${isHighForgot?'bg-rose-600 text-white font-bold':'bg-blue-100 text-blue-700 font-semibold'}">${emp.role || '一般員工'}</span>
                     </div>
                     <div class="text-xs text-slate-500 space-y-0.5">
                         <div>部門：${emp.dept} - ${emp.title}</div>
-                        <div>預設模式：${emp.mode}</div>
-                        <div>生日：${emp.birthday || '--'}</div>
+                        <div>工作模式：${emp.mode==='公司辦公'?'🏢 總部辦公':'🏠 居家 WFH'}</div>
+                        <div>忘卡次數：<span class="font-bold ${isHighForgot?'text-rose-600':'text-slate-700'}">${forgotCount} 次</span></div>
+                    </div>
+                    <div class="pt-1 flex justify-end">
+                        <button onclick="openEditEmpModal(${idx})" class="bg-blue-600 text-white text-xs px-3 py-1 rounded-lg font-medium">編輯權限資料</button>
                     </div>
                 `;
                 mobileCards.appendChild(card);
             });
+        }
+
+        // 開啟與儲存 HR 手動編輯視窗
+        function openEditEmpModal(idx) {
+            const emp = employees[idx];
+            document.getElementById('editEmpId').value = idx;
+            document.getElementById('editEmpName').value = emp.name;
+            document.getElementById('editEmpDept').value = emp.dept || "";
+            document.getElementById('editEmpTitle').value = emp.title || "";
+            document.getElementById('editEmpRole').value = emp.role || "一般員工";
+            document.getElementById('editEmpMode').value = emp.mode || "公司辦公";
+            document.getElementById('editEmpEmail').value = emp.email || "";
+            document.getElementById('editEmpModal').classList.remove('hidden');
+        }
+
+        function closeEditEmpModal() {
+            document.getElementById('editEmpModal').classList.add('hidden');
+        }
+
+        function saveEmpEdit() {
+            const idx = parseInt(document.getElementById('editEmpId').value);
+            employees[idx].name = document.getElementById('editEmpName').value;
+            employees[idx].dept = document.getElementById('editEmpDept').value;
+            employees[idx].title = document.getElementById('editEmpTitle').value;
+            employees[idx].role = document.getElementById('editEmpRole').value;
+            employees[idx].mode = document.getElementById('editEmpMode').value;
+            employees[idx].email = document.getElementById('editEmpEmail').value;
+
+            saveEmployees();
+            closeEditEmpModal();
+            renderUserSelector();
+            renderDashboard();
+            openDlg("修改成功", "員工資料與權限已成功更新！");
         }
 
         function renderRecordsTable() {
@@ -898,8 +1038,9 @@
         }
 
         function updateTargetWidget() {
+            if (employees.length === 0) return;
             const user = employees[currentUserIndex];
-            document.getElementById('currentModeBadge').innerText = user.mode;
+            document.getElementById('currentModeBadge').innerText = user.mode || "公司辦公";
         }
 
         function initMap() {
@@ -958,8 +1099,17 @@
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         }
 
-        function openAddEmpModal() { openDlg("功能提示", "新增員工視窗可在後台管理模組擴充處理。"); }
-        function downloadCSVTemplate() { openDlg("匯出成功", "已下載 CSV 範本檔案。"); }
+        function downloadCSVTemplate() {
+            const templateCSV = "工號,姓名,部門,職稱,身份別,生日,工作模式,信箱\nEMP-001,蕭千雯,人力資源部,HR經理,HR人資部,1990-10-30,公司辦公,hr@company.com\nEMP-002,陳主管,資訊科技部,技術總監,部門主管,1988-06-12,公司辦公,manager@company.com\nEMP-003,林員工,行銷企劃部,行銷專員,一般員工,1995-03-20,居家辦公,staff@company.com";
+            const blob = new Blob(["\uFEFF" + templateCSV], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute("download", "員工資料匯入範本.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
         function exportRecordsCSV() { openDlg("匯出成功", "已成功將出勤打卡紀錄匯出為 CSV。"); }
     </script>
 </body>
