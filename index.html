@@ -14,7 +14,6 @@
         #map { height: 280px; width: 100%; border-radius: 1rem; }
         @media (min-width: 640px) { #map { height: 350px; } }
         .tree-line-v { width: 2px; background-color: #cbd5e1; margin: 0 auto; }
-        .tree-line-h { height: 2px; background-color: #cbd5e1; }
     </style>
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col pb-16 lg:pb-0">
@@ -226,7 +225,7 @@
                 </button>
                 <button onclick="switchTab('checkin')" id="nav-checkin" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-slate-600 hover:bg-slate-50 transition-all">
                     <i class="fa-solid fa-location-dot w-5"></i>
-                    <span>打卡定位系統</span>
+                    <span>打卡定位系統 (含主管)</span>
                 </button>
                 <button onclick="switchTab('org')" id="nav-org" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium text-slate-600 hover:bg-slate-50 transition-all">
                     <i class="fa-solid fa-sitemap w-5"></i>
@@ -300,9 +299,9 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="md:col-span-1 bg-gradient-to-br from-blue-600 to-indigo-700 text-white rounded-2xl p-6 shadow-md flex flex-col justify-between">
                         <div>
-                            <span class="bg-white/20 text-white text-xs px-3 py-1 rounded-full font-medium">極速打卡通道</span>
-                            <h3 class="text-2xl font-bold mt-4">一鍵智慧考勤</h3>
-                            <p class="text-blue-100 text-xs mt-2 leading-relaxed">點擊前往打卡頁，背景自動抓取 GPS 座標完成考勤。</p>
+                            <span class="bg-white/20 text-white text-xs px-3 py-1 rounded-full font-medium">主管考勤通道</span>
+                            <h3 class="text-2xl font-bold mt-4">主管/HR 快捷打卡</h3>
+                            <p class="text-blue-100 text-xs mt-2 leading-relaxed">點擊直接前往專屬打卡頁面，進行個人考勤登記。</p>
                         </div>
                         <button onclick="switchTab('checkin')" class="mt-6 w-full bg-white text-blue-600 font-bold py-3 rounded-xl shadow hover:bg-blue-50 transition-all flex items-center justify-center space-x-2">
                             <i class="fa-solid fa-paper-plane"></i>
@@ -333,27 +332,27 @@
                 </div>
             </div>
 
-            <!-- TAB 2: CHECKIN (包含個人化問候與勵志短語) -->
+            <!-- TAB 2: CHECKIN (所有人均包含專屬問候與考勤按鈕) -->
             <div id="tab-checkin" class="space-y-6">
                 <!-- 專屬個人問候 Widget -->
                 <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-2xl p-5 sm:p-6 text-white shadow-lg space-y-2">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center space-x-3">
                             <div class="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center font-bold text-lg text-white" id="greetingAvatar">
-                                員
+                                蕭
                             </div>
                             <div>
                                 <h3 class="font-bold text-lg sm:text-xl flex items-center space-x-2">
-                                    <span id="userGreetingText">同仁，早安！☀️</span>
+                                    <span id="userGreetingText">蕭千雯 (A001008)，午安！☕</span>
                                 </h3>
-                                <p id="userEmpInfoText" class="text-xs text-blue-100 mt-0.5">工號: -- | 部門: --</p>
+                                <p id="userEmpInfoText" class="text-xs text-blue-100 mt-0.5">部門：部門四 | 職稱：資料庫管理 / HR主管 | 身份：HR人資部</p>
                             </div>
                         </div>
                         <span id="currentModeBadge" class="bg-white/20 backdrop-blur-md text-white border border-white/30 text-xs font-semibold px-3 py-1 rounded-full">公司辦公</span>
                     </div>
                     <div class="pt-2 border-t border-white/20 mt-3">
                         <p id="motivationalQuote" class="text-xs sm:text-sm text-blue-50 font-medium italic leading-relaxed">
-                            💬「每一天的努力，都在為更好的自己積蓄力量！加油！」
+                            💬「每一天的努力，都在為更好的自己積蓄力量！」
                         </p>
                     </div>
                 </div>
@@ -362,7 +361,7 @@
                     <div class="flex items-center justify-between">
                         <h3 class="font-bold text-slate-800 flex items-center space-x-2 text-sm sm:text-base">
                             <i class="fa-solid fa-street-view text-blue-600"></i>
-                            <span>即時考勤定位打卡</span>
+                            <span>即時考勤定位打卡 (所有人通用)</span>
                         </h3>
                     </div>
 
@@ -515,8 +514,7 @@
             "保持熱愛，奔赴山海！今天的你依然無堅不摧！",
             "專注眼前的小事，成就未來的繁星！",
             "辛苦了！今天的每一份付出，公司都深刻感謝！",
-            "保持微笑與專注，今天又是充滿可能的一天！",
-            "每一步積累，都是走向成功的堅實基石！"
+            "保持微笑與專注，今天又是充滿可能的一天！"
         ];
 
         let employees = JSON.parse(localStorage.getItem('hr_employees_v2.2')) || [];
@@ -540,7 +538,6 @@
         }
 
         function saveEmployees() { localStorage.setItem('hr_employees_v2.2', JSON.stringify(employees)); }
-        function saveRecords() { localStorage.setItem('hr_records_v2.2', JSON.stringify(checkinRecords)); }
 
         function renderUserSelector() {
             const selector = document.getElementById('userSelector');
@@ -593,7 +590,6 @@
             document.getElementById('greetingAvatar').innerText = user.name.substring(0, 1);
             document.getElementById('roleBadge').innerText = user.role || "一般員工";
 
-            // 個人化問候語邏輯
             const hour = new Date().getHours();
             let timeGreeting = "早安！☀️";
             if (hour >= 12 && hour < 18) timeGreeting = "午安！☕";
@@ -603,7 +599,6 @@
             document.getElementById('userEmpInfoText').innerText = `部門：${user.dept || '未定'} | 職稱：${user.title || '專員'} | 身份：${user.role || '一般員工'}`;
             document.getElementById('currentModeBadge').innerText = user.mode || "公司辦公";
 
-            // 隨機勵志句
             const randomQuote = MOTIVATIONAL_QUOTES[Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)];
             document.getElementById('motivationalQuote').innerText = `💬「${randomQuote}」`;
 
@@ -648,8 +643,6 @@
                 if (mobileDashboard) mobileDashboard.classList.remove('hidden');
                 if (mobileEmployees) mobileEmployees.classList.remove('hidden');
                 if (mobileRecords) mobileRecords.classList.remove('hidden');
-
-                switchTab('dashboard');
             }
         }
 
